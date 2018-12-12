@@ -27,6 +27,8 @@ Now everything is ready. Run the following command to start the dev server:
 npm run dev
 ```
 
+<hr>
+
 Then open [http://localhost:3000](http://localhost:3000) from your favourite browser.<br />
 What's the output you see on the screen?
 
@@ -58,6 +60,8 @@ export default () => (
 
 Then we can access that page with [http://localhost:3000](http://localhost:3000).
 <br />
+<hr>
+
 After that, we need to connect these pages. We could use an HTML "a" tag for that. However, it won't perform client-side navigation; it navigates to the page via the server, which is not what we want.n order to support client-side navigation, we need to use Next.js's Link API, which is exported via `next/link`.
 <br />
 Add the following code into `pages/index.js`:
@@ -100,6 +104,8 @@ Okay, now we have a simple task for you:
 How would you best describe the experience of the Back button?
 
 > It navigated the page to the index (home) page via the client side.
+
+<hr>
 
 Add the following to the file `components/Header.js`.
 
@@ -188,3 +194,76 @@ export default () => (
     </Layout>
 )
 ```
+<hr>
+First of all, let's add the list of post titles in the home page.
+<br>
+Add the following content to the pages/index.js.
+
+```jsx
+import Layout from '../components/MyLayout.js'
+import Link from 'next/link'
+
+const PostLink = (props) => (
+  <li>
+    <Link href={`/post?title=${props.title}`}>
+      <a>{props.title}</a>
+    </Link>
+  </li>
+)
+
+export default () => (
+  <Layout>
+    <h1>My Blog</h1>
+    <ul>
+      <PostLink title="Hello Next.js"/>
+      <PostLink title="Learn Next.js is awesome"/>
+      <PostLink title="Deploy apps with Zeit"/>
+    </ul>
+  </Layout>
+)
+```
+
+Once you add this content, you will see a page like this:
+![add dynamin page](https://cloud.githubusercontent.com/assets/50838/24542722/600b9ce8-161a-11e7-9f1d-7ed08ff394fd.png)
+
+Next, click the first link. You'll get a 404 page. That's fine.
+<br>
+What's the URL of that page?
+
+> /post?title=Hello%20Next.js
+
+We are passing data via a query string parameter (a query param). In our case, it's the “title” query param. We do this with our PostLink component as shown below:
+
+##Create the “post” page
+Create a file called `pages/post.js` and add the following content:
+
+```jsx
+import {withRouter} from 'next/router'
+import Layout from '../components/MyLayout.js'
+
+const Content = (props) => (
+  <div>
+    <h1>{props.router.query.title}</h1>
+    <p>This is the blog post content.</p>
+  </div>
+)
+
+const Page = withRouter((props) => (
+    <Layout>
+       <Content />
+    </Layout>
+))
+
+export default Page
+```
+Now our page will look like this:
+![add dynamin page](https://cloud.githubusercontent.com/assets/50838/24542721/5fdd9c26-161a-11e7-9b10-296d4cb6912d.png)
+
+Here's what's happening in the above code.
+- We import and use the "withRouter" function from "next/router" this will inject the Next.js router as a property
+- In this case, we are using the router's “query” object, which has the query string params.
+- Therefore, we get the title with `props.router.query.title`.
+
+What'll happen when you navigate to this page? [http://localhost:3000/post?title=Hello%20Next.js](http://localhost:3000/post?title=Hello%20Next.js)
+
+> It throws an error
