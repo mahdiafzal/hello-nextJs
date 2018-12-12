@@ -233,8 +233,8 @@ What's the URL of that page?
 > /post?title=Hello%20Next.js
 
 We are passing data via a query string parameter (a query param). In our case, it's the “title” query param. We do this with our PostLink component as shown below:
-
-##Create the “post” page
+<br>
+<hr>
 Create a file called `pages/post.js` and add the following content:
 
 ```jsx
@@ -270,7 +270,6 @@ What'll happen when you navigate to this page? [http://localhost:3000/post?title
 
 <hr>
 
-##Clean URLs with Route Masking
 Here, we are going to use a unique feature of Next.js called route masking. Basically, it will show a different URL on the browser than the actual URL that your app sees.
 <br>
 Let's add a route mask to our blog post URL.
@@ -304,7 +303,6 @@ export default () => (
 In the `<Link>` element, we have used another prop called “as”. That's the URL which we need to show on the browser. The URL your app sees is mentioned in the “href” prop.
 <hr>
 
-###Reload
 Now go to the home page: [http://localhost:3000](http://localhost:3000)
 <br>
 Then click on the first post title. You'll be navigated to the post page.
@@ -316,3 +314,124 @@ Then reload the browser. What will happen?
 It gives us a 404 error. That's because there is no such page to load on the server.
 <br>
 The server will try to load the page `p/hello-nextjs`, but we only have two pages: `index.js` and `post.js`.
+<br>
+With this, we can't run this app in production. We need to fix this.
+
+<hr>
+
+Now we are going to create a custom server for our app using [Express](https://expressjs.com/). It's pretty simple.
+<br>
+First of all, add Express into your app:
+
+```json
+npm install --save express
+```
+
+Then create a file called `server.js` in your app and add following content:
+
+```js
+const express = require('express')
+const next = require('next')
+
+const dev = process.env.NODE_ENV !== 'production'
+const app = next({ dev })
+const handle = app.getRequestHandler()
+
+app.prepare()
+.then(() => {
+  const server = express()
+
+  server.get('*', (req, res) => {
+    return handle(req, res)
+  })
+
+  server.listen(3000, (err) => {
+    if (err) throw err
+    console.log('> Ready on http://localhost:3000')
+  })
+})
+.catch((ex) => {
+  console.error(ex.stack)
+  process.exit(1)
+})
+```
+
+Now update your npm dev script to:
+
+```json
+{
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
+  }
+}
+```
+
+Now try to run your app again with `npm run dev`.
+
+What's the you experience you will get?
+
+> The app will work but no server side clean URLs.
+
+<hr>
+
+Now we are going to add a custom route to match our blog post URLs.
+<br>
+With the new route, our `server.js` will look like this:
+
+```js
+const express = require('express')
+const next = require('next')
+
+const dev = process.env.NODE_ENV !== 'production'
+const app = next({ dev })
+const handle = app.getRequestHandler()
+
+app.prepare()
+.then(() => {
+  const server = express()
+
+  server.get('/p/:id', (req, res) => {
+    const actualPage = '/post'
+    const queryParams = { title: req.params.id } 
+    app.render(req, res, actualPage, queryParams)
+  })
+
+  server.get('*', (req, res) => {
+    return handle(req, res)
+  })
+
+  server.listen(3000, (err) => {
+    if (err) throw err
+    console.log('> Ready on http://localhost:3000')
+  })
+})
+.catch((ex) => {
+  console.error(ex.stack)
+  process.exit(1)
+})
+```
+
+Have a look at the code below:
+
+```js
+server.get('/p/:id', (req, res) => {
+    const actualPage = '/post'
+    const queryParams = { title: req.params.id } 
+    app.render(req, res, actualPage, queryParams)
+})
+```
+
+Here, we simply mapped a custom route to our existing page "/post". We have also mapped query params as well.
+<br>
+Now, restart your app and visit to following page:
+<br>
+[http://localhost:3000/p/hello-nextjs](http://localhost:3000/p/hello-nextjs)
+<br>
+Now you won't see the 404 page anymore but the actual page.
+
+> Client side rendered title and server side rendered title are different.
+
+<hr>
+
