@@ -267,3 +267,52 @@ Here's what's happening in the above code.
 What'll happen when you navigate to this page? [http://localhost:3000/post?title=Hello%20Next.js](http://localhost:3000/post?title=Hello%20Next.js)
 
 > It throws an error
+
+<hr>
+
+##Clean URLs with Route Masking
+Here, we are going to use a unique feature of Next.js called route masking. Basically, it will show a different URL on the browser than the actual URL that your app sees.
+<br>
+Let's add a route mask to our blog post URL.
+<br>
+Use the following code for the `pages/index.js`:
+
+```jsx
+import Layout from '../components/MyLayout.js'
+import Link from 'next/link'
+
+const PostLink = (props) => (
+  <li>
+    <Link as={`/p/${props.id}`} href={`/post?title=${props.title}`}>
+      <a>{props.title}</a>
+    </Link>
+  </li>
+)
+
+export default () => (
+  <Layout>
+    <h1>My Blog</h1>
+    <ul>
+      <PostLink id="hello-nextjs" title="Hello Next.js"/>
+      <PostLink id="learn-nextjs" title="Learn Next.js is awesome"/>
+      <PostLink id="deploy-nextjs" title="Deploy apps with Zeit"/>
+    </ul>
+  </Layout>
+)
+```
+
+In the `<Link>` element, we have used another prop called “as”. That's the URL which we need to show on the browser. The URL your app sees is mentioned in the “href” prop.
+<hr>
+
+###Reload
+Now go to the home page: [http://localhost:3000](http://localhost:3000)
+<br>
+Then click on the first post title. You'll be navigated to the post page.
+<br>
+Then reload the browser. What will happen?
+
+> It will throw a 404 error. 
+
+It gives us a 404 error. That's because there is no such page to load on the server.
+<br>
+The server will try to load the page `p/hello-nextjs`, but we only have two pages: `index.js` and `post.js`.
