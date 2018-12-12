@@ -60,7 +60,6 @@ Then we can access that page with [http://localhost:3000](http://localhost:3000)
 <br />
 After that, we need to connect these pages. We could use an HTML "a" tag for that. However, it won't perform client-side navigation; it navigates to the page via the server, which is not what we want.n order to support client-side navigation, we need to use Next.js's Link API, which is exported via `next/link`.
 <br />
-<br />
 Add the following code into `pages/index.js`:
 
 ```jsx
@@ -101,3 +100,91 @@ Okay, now we have a simple task for you:
 How would you best describe the experience of the Back button?
 
 > It navigated the page to the index (home) page via the client side.
+
+Add the following to the file `components/Header.js`.
+
+```jsx
+import Link from 'next/link'
+
+const linkStyle = {
+  marginRight: 15
+}
+
+const Header = () => (
+    <div>
+        <Link href="/">
+          <a style={linkStyle}>Home</a>
+        </Link>
+        <Link href="/about">
+          <a style={linkStyle}>About</a>
+        </Link>
+    </div>
+)
+
+export default Header
+```
+
+Next, let's import this component and use it in our pages. For the `index.js` page, it will look like this:
+
+```jsx
+import Header from '../components/Header'
+
+export default () => (
+  <div>
+    <Header />
+    <p>Hello Next.js</p>
+  </div>
+)
+```
+
+You can do the same for the about.js page as well.
+<br>
+<hr>
+In our app, we'll use a common style across various pages. For this purpose, we can create a common Layout component and use it for each of our pages. Here's an example:
+<br>
+Add this content to `components/MyLayout.js`:
+
+```jsx
+import Header from './Header'
+
+const layoutStyle = {
+  margin: 20,
+  padding: 20,
+  border: '1px solid #DDD'
+}
+
+const Layout = (props) => (
+  <div style={layoutStyle}>
+    <Header />
+    {props.children}
+  </div>
+)
+
+export default Layout
+```
+
+Once we've done that, we can use this Layout in our pages as follows:
+
+```jsx
+// pages/index.js
+
+import Layout from '../components/MyLayout.js'
+
+export default () => (
+    <Layout>
+       <p>Hello Next.js</p>
+    </Layout>
+)
+```
+
+```jsx
+// pages/about.js
+
+import Layout from '../components/MyLayout.js'
+
+export default () => (
+    <Layout>
+       <p>This is the about page</p>
+    </Layout>
+)
+```
